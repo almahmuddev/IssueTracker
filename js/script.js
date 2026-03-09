@@ -10,8 +10,16 @@ let searchTimer;
 const API = 'https://phi-lab-server.vercel.app/api/v1/lab';
 
 
-// document.addEventListener('DOMContentLoaded', () => {
-  // will be placed here 
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('search-input').addEventListener('input', () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+      performSearch();
+    }, 300);
+  });
+});
+
 
 
 function handleLogin() {
@@ -54,31 +62,6 @@ async function loadAllIssues() {
     showError('Failed to load issues. Please try again.');
   }
 }
-
-// async function performSearch() {
-//   const q = document.getElementById('search-input').value.trim();
-
-//   if (!q) {
-//     isSearchMode = false;
-//     document.getElementById('search-label').textContent = '';
-//     renderIssues(filterIssues(currentTab));
-//     return;
-//   }
-
-//   showSpinner();
-//   isSearchMode = true;
-//   document.getElementById('search-label').textContent = `Search: "${q}"`;
-
-//   try {
-//     const res = await fetch(`${API}/issues/search?q=${encodeURIComponent(q)}`);
-//     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-//     const data = await res.json();
-//     const results = Array.isArray(data) ? data : (data.issues || data.data || []);
-//     renderIssues(results);
-//   } catch (err) {
-//     showError('Search failed. Please try again.');
-//   }
-// }
 
 function performSearch() {
   const q = document.getElementById('search-input').value.trim().toLowerCase();

@@ -690,6 +690,51 @@ body {
   font-size: 12px;
 }
 
+@media (max-width: 600px) {
+  .navbar {
+    padding: 0 14px;
+  }
+
+  .search-input {
+    width: 140px;
+  }
+
+  .search-input:focus {
+    width: 170px;
+  }
+
+  .main-content {
+    padding: 16px 12px;
+  }
+}
+
+.card-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:8px;
+}
+
+.priority{
+  font-size:11px;
+  padding:3px 10px;
+  border-radius:20px;
+  font-weight:600;
+}
+
+.card-tags{
+  display:flex;
+  gap:6px;
+  margin-top:10px;
+}
+
+.card-footer{
+  display:flex;
+  justify-content:space-between;
+  font-size:12px;
+  margin-top:12px;
+  color:#6b7280;
+}
 
 
 
