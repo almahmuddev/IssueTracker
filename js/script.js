@@ -1,6 +1,6 @@
 
 
-
+//   I took svg icon help from browser. just to make my way easier
 
 let allIssues = [];
 let currentTab = 'all';
@@ -76,7 +76,6 @@ function performSearch() {
   isSearchMode = true;
   document.getElementById('search-label').textContent = `Search: "${q}"`;
 
-  // const filtered = allIssues.filter(issue => {
   const filtered = filterIssues(currentTab).filter(issue => {
     const title = (issue.title || '').toLowerCase();
     const desc = (issue.description || issue.body || '').toLowerCase();
@@ -142,10 +141,11 @@ function updateCounts() {
 // ===== render issues =====
 function renderIssues(issues) {
   const container = document.getElementById('issues-container');
-
   if (!issues || issues.length === 0) {
     container.innerHTML = `
       <div class="empty-state">
+
+      
         <svg width="40" height="40" viewBox="0 0 16 16" fill="#57606a">
           <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"/>
           <path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Z"/>
@@ -169,7 +169,7 @@ function buildCard(issue) {
   const category = esc(issue.category || '');
   const author = esc(issue.author || issue.user || '');
   const priority = (issue.priority || '').toLowerCase();
-  const label = issue.labels || (issue.label ? [issue.label] : []);
+  const label = Array.isArray(issue.labels) ? issue.labels : issue.label ? [issue.label] : [];
   const date = formatDate(issue.createdAt || issue.created_at);
 
   const priorityClass =
