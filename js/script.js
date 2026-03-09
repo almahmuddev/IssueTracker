@@ -177,9 +177,9 @@ function buildCard(issue) {
       priority === 'medium' || priority === 'med' ? 'tag-priority-med' :
         'tag-priority-low';
 
-  const openIcon = `<img src="../images/Status-open.svg" syle = "width: 12px; height: 12px"/> `;
+  const openIcon = `<img src="../images/Status-open.png" syle = "width: 12px; height: 12px"/> `;
 
-  const closedIcon = `<img src="../images/Status-close.svg" syle = "width: 12px; height: 12px" />`;
+  const closedIcon = `<img src="../images/Status-close.png" syle = "width: 12px; height: 12px" />`;
 
 
   return `<div class="issue-card ${isOpen ? 'open' : 'closed'}" onclick="openIssue('${id}')">
