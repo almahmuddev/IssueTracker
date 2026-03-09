@@ -401,19 +401,29 @@ body {
   gap: 14px;
 }
 
-@media (max-width: 1024px) {
+@media (min-width: 1025px) and (max-width: 1280px) {
   .issues-grid {
     grid-template-columns: repeat(3, 1fr);
   }
 }
-
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .issues-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 688px) {
+  .issues-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 577px) and (max-width:687px){
+  .issues-grid {
+    grid-template-columns: repeat(1, 1fr);
+  }
+}
+
+@media (max-width: 576px) {
   .issues-grid {
     grid-template-columns: 1fr;
   }
@@ -422,7 +432,6 @@ body {
 .issue-card {
   background: #ffffff;
   border: 1px solid var(--border);
-  border-radius: var(--radius);
   border-radius: 10px;
   padding: 14px 12px;
   cursor: pointer;
@@ -530,7 +539,7 @@ body {
 
 .card-footer {
   font-size: 11px;
-  color: #7d8590;
+  color:#6b7280;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -564,7 +573,7 @@ body {
   }
 }
 
-/* EMPTY STATE */
+/* empty state */
 .empty-state {
   text-align: center;
   padding: 60px 20px;
@@ -582,7 +591,7 @@ body {
   color: var(--text);
 }
 
-/* MODAL OVERLAY */
+/* modal onerlay*/
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -728,13 +737,6 @@ body {
   margin-top:10px;
 }
 
-.card-footer{
-  display:flex;
-  justify-content:space-between;
-  font-size:12px;
-  margin-top:12px;
-  color:#6b7280;
-}
 
 
 
