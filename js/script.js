@@ -2,30 +2,34 @@
 
 
 
-// ===== STATE =====
 let allIssues = [];
 let currentTab = 'all';
 let isSearchMode = false;
+let searchTimer;
 
 const API = 'https://phi-lab-server.vercel.app/api/v1/lab';
 
-// ===== AUTH =====
+
+// document.addEventListener('DOMContentLoaded', () => {
+  // will be placed here 
+
+
 function handleLogin() {
   const user = document.getElementById('username').value.trim();
   const pass = document.getElementById('password').value.trim();
-  const err  = document.getElementById('login-error');
+  const err = document.getElementById('login-error');
 
   if (user === 'admin' && pass === 'admin123') {
     err.style.display = 'none';
     document.getElementById('login-page').style.display = 'none';
     document.getElementById('main-page').style.display = 'block';
     loadAllIssues();
+
   } else {
     err.style.display = 'block';
   }
 }
 
-// Enter key on login inputs
 document.addEventListener('keydown', (e) => {
   const loginVisible = document.getElementById('login-page').style.display !== 'none';
   if (e.key === 'Enter' && loginVisible) {
@@ -33,14 +37,10 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// Enter key on search input
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' && document.activeElement === document.getElementById('search-input')) {
-    performSearch();
-  }
-});
 
-// ===== API CALLS =====
+
+
+// ===== api call =====
 async function loadAllIssues() {
   showSpinner();
   try {
@@ -55,8 +55,33 @@ async function loadAllIssues() {
   }
 }
 
-async function performSearch() {
-  const q = document.getElementById('search-input').value.trim();
+// async function performSearch() {
+//   const q = document.getElementById('search-input').value.trim();
+
+//   if (!q) {
+//     isSearchMode = false;
+//     document.getElementById('search-label').textContent = '';
+//     renderIssues(filterIssues(currentTab));
+//     return;
+//   }
+
+//   showSpinner();
+//   isSearchMode = true;
+//   document.getElementById('search-label').textContent = `Search: "${q}"`;
+
+//   try {
+//     const res = await fetch(`${API}/issues/search?q=${encodeURIComponent(q)}`);
+//     if (!res.ok) throw new Error(`HTTP ${res.status}`);
+//     const data = await res.json();
+//     const results = Array.isArray(data) ? data : (data.issues || data.data || []);
+//     renderIssues(results);
+//   } catch (err) {
+//     showError('Search failed. Please try again.');
+//   }
+// }
+
+function performSearch() {
+  const q = document.getElementById('search-input').value.trim().toLowerCase();
 
   if (!q) {
     isSearchMode = false;
@@ -65,19 +90,25 @@ async function performSearch() {
     return;
   }
 
-  showSpinner();
   isSearchMode = true;
   document.getElementById('search-label').textContent = `Search: "${q}"`;
 
-  try {
-    const res = await fetch(`${API}/issues/search?q=${encodeURIComponent(q)}`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    const results = Array.isArray(data) ? data : (data.issues || data.data || []);
-    renderIssues(results);
-  } catch (err) {
-    showError('Search failed. Please try again.');
-  }
+  // const filtered = allIssues.filter(issue => {
+  const filtered = filterIssues(currentTab).filter(issue => {
+    const title = (issue.title || '').toLowerCase();
+    const desc = (issue.description || issue.body || '').toLowerCase();
+    const category = (issue.category || '').toLowerCase();
+    const author = (issue.author || issue.user || '').toLowerCase();
+
+    return (
+      title.includes(q) ||
+      desc.includes(q) ||
+      category.includes(q) ||
+      author.includes(q)
+    );
+  });
+
+  renderIssues(filtered);
 }
 
 async function openIssue(id) {
@@ -88,13 +119,13 @@ async function openIssue(id) {
     const issue = data.issue || data.data || data;
     showModal(issue);
   } catch (err) {
-    // Fallback to locally cached data if API call fails
+    // locally cached data if API call fails
     const issue = allIssues.find((i) => i.id === id || i._id === id);
     if (issue) showModal(issue);
   }
 }
 
-// ===== TABS =====
+// ===== tabs =======
 function switchTab(tab) {
   currentTab = tab;
   isSearchMode = false;
@@ -114,18 +145,18 @@ function filterIssues(tab) {
 }
 
 function updateCounts() {
-  const openCount   = allIssues.filter((i) => (i.status || '').toLowerCase() === 'open').length;
+  const openCount = allIssues.filter((i) => (i.status || '').toLowerCase() === 'open').length;
   const closedCount = allIssues.filter((i) => (i.status || '').toLowerCase() === 'closed').length;
 
-  document.getElementById('count-all').textContent    = allIssues.length;
-  document.getElementById('count-open').textContent   = openCount;
+  document.getElementById('count-all').textContent = allIssues.length;
+  document.getElementById('count-open').textContent = openCount;
   document.getElementById('count-closed').textContent = closedCount;
-  document.getElementById('summary-open-count').textContent   = openCount;
+  document.getElementById('summary-open-count').textContent = openCount;
   document.getElementById('summary-closed-count').textContent = closedCount;
   document.getElementById('summary-total-count').textContent = allIssues.length;
 }
 
-// ===== RENDER ISSUES =====
+// ===== render issues =====
 function renderIssues(issues) {
   const container = document.getElementById('issues-container');
 
@@ -147,54 +178,69 @@ function renderIssues(issues) {
 }
 
 function buildCard(issue) {
-  const status   = (issue.status || '').toLowerCase();
-  const isOpen   = status === 'open';
-  const id       = issue.id || issue._id || '';
-  const title    = esc(issue.title || 'Untitled Issue');
-  const desc     = esc(issue.description || issue.body || '');
+  const status = (issue.status || '').toLowerCase();
+  const isOpen = status === 'open';
+  const id = issue.id || issue._id || '';
+  const title = esc(issue.title || 'Untitled Issue');
+  const desc = esc(issue.description || issue.body || '');
   const category = esc(issue.category || '');
-  const author   = esc(issue.author || issue.user || '');
+  const author = esc(issue.author || issue.user || '');
   const priority = (issue.priority || '').toLowerCase();
-  const label    = esc(issue.label || (issue.labels && issue.labels[0]) || '');
-  const date     = formatDate(issue.createdAt || issue.created_at);
+  const label = issue.labels || (issue.label ? [issue.label] : []);
+  const date = formatDate(issue.createdAt || issue.created_at);
 
   const priorityClass =
     priority === 'high' ? 'tag-priority-high' :
-    priority === 'medium' || priority === 'med' ? 'tag-priority-med' :
-    'tag-priority-low';
+      priority === 'medium' || priority === 'med' ? 'tag-priority-med' :
+        'tag-priority-low';
 
   const openIcon = `<img src="../images/Status-open.svg" syle = "width: 12px; height: 12px"/> `;
 
-    const closedIcon = `<img src="../images/Status-close.svg" syle = "width: 12px; height: 12px" />`;
-    
-  // const closedIcon = `
-  //   <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
-  //     <path d="M11.28 6.78a.75.75 0 0 0-1.06-1.06L7.25 8.69 5.78 7.22a.75.75 0 0 0-1.06 1.06l2 2a.75.75 0 0 0 1.06 0l3.5-3.5Z"/>
-  //     <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0Zm-1.5 0a6.5 6.5 0 1 0-13 0 6.5 6.5 0 0 0 13 0Z"/>
-  //   </svg>`;
+  const closedIcon = `<img src="../images/Status-close.svg" syle = "width: 12px; height: 12px" />`;
 
-  // i removed this from  {${isOpen ? openIcon : closedIcon}}  there below
-  // ${isOpen ? 'Open' : 'Closed'}
-  return `
-    <div class="issue-card ${isOpen ? 'open' : 'closed'}" onclick="openIssue('${id}')">
+
+  return `<div class="issue-card ${isOpen ? 'open' : 'closed'}" onclick="openIssue('${id}')">
+
+    <div class="card-header">
       <div class="card-status ${isOpen ? 'open' : 'closed'}">
         ${isOpen ? openIcon : closedIcon}
       </div>
-      <div class="card-title">${title}</div>
-      ${desc ? `<div class="card-desc">${desc}</div>` : ''}
-      <div class="card-meta">
-        ${category ? `<span class="tag tag-category">${category}</span>` : ''}
-        ${priority ? `<span class="tag ${priorityClass}">${capitalize(priority)}</span>` : ''}
-        ${label    ? `<span class="tag tag-label">${label}</span>` : ''}
-      </div>
-      <div class="card-footer">
-        <span>${author ? `By ${author}` : ''}</span>
-        <span>${date}</span>
-      </div>
-    </div>`;
+
+      ${priority ? `<span class="priority ${priorityClass}">${capitalize(priority)}</span>` : ''}
+    </div>
+
+    <div class="card-title">${title}</div>
+
+    ${desc ? `<div class="card-desc">${desc}</div>` : ''}
+
+    <div class="card-tags">
+  ${category ? `<span class="tag tag-category">${category}</span>` : ''}
+
+  ${Array.isArray(label)
+      ? label.map(l => {
+        if (l.toLowerCase() === 'bug') {
+          return `<span class="tag tag-bug"> ${l}</span>`;
+        } else {
+          return `<span class="tag tag-label">${l}</span>`;
+        }
+      }).join('')
+      : label
+        ? (label.toLowerCase() === 'bug'
+          ? `<span class="tag tag-bug"> ${label}</span>`
+          : `<span class="tag tag-label">${label}</span>`)
+        : ''
+    }
+</div>
+
+    <div class="card-footer">
+      <span>#${id} by ${author || ''}</span>
+      <span>${date}</span>
+    </div>
+
+  </div>`;
 }
 
-// ===== MODAL =====
+// ===== modal here ======
 function showModal(issue) {
   const status = (issue.status || '').toLowerCase();
   const isOpen = status === 'open';
@@ -219,22 +265,22 @@ function showModal(issue) {
 
     <div class="modal-grid">
       ${issue.category
-        ? `<div class="modal-section"><label>Category</label>
+      ? `<div class="modal-section"><label>Category</label>
            <p><span class="tag tag-category">${esc(issue.category)}</span></p></div>` : ''}
       ${issue.priority
-        ? `<div class="modal-section"><label>Priority</label>
+      ? `<div class="modal-section"><label>Priority</label>
            <p>${esc(capitalize(issue.priority))}</p></div>` : ''}
       ${issue.author || issue.user
-        ? `<div class="modal-section"><label>Author</label>
+      ? `<div class="modal-section"><label>Author</label>
            <p>${esc(issue.author || issue.user)}</p></div>` : ''}
       ${issue.label || (issue.labels && issue.labels[0])
-        ? `<div class="modal-section"><label>Label</label>
+      ? `<div class="modal-section"><label>Label</label>
            <p><span class="tag tag-label">${esc(issue.label || issue.labels[0])}</span></p></div>` : ''}
       ${issue.createdAt || issue.created_at
-        ? `<div class="modal-section"><label>Created</label>
+      ? `<div class="modal-section"><label>Created</label>
            <p>${formatDate(issue.createdAt || issue.created_at, true)}</p></div>` : ''}
       ${issue.id || issue._id
-        ? `<div class="modal-section"><label>Issue #</label>
+      ? `<div class="modal-section"><label>Issue #</label>
            <p>#${issue.id || issue._id}</p></div>` : ''}
     </div>
   `;
@@ -258,7 +304,7 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') closeModalDirect();
 });
 
-// ===== UTILITY HELPERS =====
+// ===== utility helpes =====
 function showSpinner() {
   document.getElementById('issues-container').innerHTML = `
     <div class="spinner-wrap">
